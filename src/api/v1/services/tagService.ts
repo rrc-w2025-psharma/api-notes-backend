@@ -1,0 +1,54 @@
+import { CreateTagInput, Tag, UpdateTagInput } from "../models/tagModel";
+
+const tags: Tag[] = [];
+
+const generateTagId = (): string => {
+    return `tag-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+};
+
+export const getAllTags = (): Tag[] => {
+    return structuredClone(tags);
+};
+
+export const getTagById = (id: string): Tag | undefined => {
+    return tags.find((tag: Tag) => tag.id === id);
+};
+
+export const createTag = (tagData: CreateTagInput): Tag => {
+    const newTag: Tag = {
+        id: generateTagId(),
+        name: tagData.name,
+    };
+
+    tags.push(newTag);
+    return structuredClone(newTag);
+};
+
+export const updateTag = (
+    id: string,
+    tagData: UpdateTagInput
+): Tag | undefined => {
+    const tagIndex: number = tags.findIndex((tag: Tag) => tag.id === id);
+
+    if (tagIndex === -1) {
+        return undefined;
+    }
+
+    tags[tagIndex] = {
+        ...tags[tagIndex],
+        ...tagData,
+    };
+
+    return structuredClone(tags[tagIndex]);
+};
+
+export const deleteTag = (id: string): boolean => {
+    const tagIndex: number = tags.findIndex((tag: Tag) => tag.id === id);
+
+    if (tagIndex === -1) {
+        return false;
+    }
+
+    tags.splice(tagIndex, 1);
+    return true;
+};
