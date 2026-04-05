@@ -34,19 +34,6 @@
         "ts-node-dev": "^2.0.0",
         "typescript": "^5.9.3"
     },
-    "jest": {
-        "preset": "ts-jest",
-        "testEnvironment": "node",
-        "roots": [
-            "<rootDir>/test"
-        ],
-        "testMatch": [
-            "**/*.test.ts"
-        ],
-        "transform": {
-            "^.+\\.ts$": "ts-jest"
-        }
-    },
     "directories": {
         "test": "test"
     },
