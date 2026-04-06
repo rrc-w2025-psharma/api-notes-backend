@@ -15,7 +15,7 @@ const router: Router = express.Router();
 
 router.get("/", authenticate,  getAllTags);
 router.get("/:id", authenticate, getTagById);
-router.post("/", authenticate, createTag);
+router.post("/", authenticate, validate(createTagSchema), createTag);
 router.put("/:id", authenticate, validate(updateTagSchema), updateTag);
 router.delete("/:id", authenticate, deleteTag);
 

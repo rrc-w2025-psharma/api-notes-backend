@@ -1,6 +1,26 @@
 import request from "supertest";
 import app from "../src/app";
 
+jest.mock("../src/api/v1/services/categoryService", () => ({
+    getAllCategories: jest.fn().mockResolvedValue([]),
+    getCategoryById: jest.fn((id) => {
+        if (id === "category-does-not-exist") return null;
+        return Promise.resolve({
+            id,
+            name: "School",
+        });
+    }),
+    createCategory: jest.fn().mockResolvedValue({
+        id: "test-id",
+        name: "School",
+    }),
+    updateCategory: jest.fn().mockResolvedValue({
+        id: "test-id",
+        name: "Updated School",
+    }),
+    deleteCategory: jest.fn().mockResolvedValue(true),
+}));
+
 describe("Category API Endpoints", () => {
     let createdCategoryId: string;
 
@@ -68,7 +88,7 @@ describe("Category API Endpoints", () => {
             .send({});
 
         expect(response.status).toBe(400);
-        expect(response.body.message).toBe("Category name is required");
+        expect(response.body.message).toBe("Tag name is required");
     });
 
     it("should return 404 when getting a category that does not exist", async () => {

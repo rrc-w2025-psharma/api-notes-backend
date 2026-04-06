@@ -20,10 +20,14 @@ export const createTag = async (
     userId: string,
     tagData: CreateTagInput
 ): Promise<Tag> => {
+    if (!tagData.name || !tagData.name.trim()) {
+        throw new Error("Tag name is required");
+    }
+
     const newTag: Tag = {
         id: generateTagId(),
         userId,
-        name: tagData.name,
+        name: tagData.name.trim(),
     };
 
     return await tagRepository.createTag(newTag);
@@ -34,7 +38,16 @@ export const updateTag = async (
     userId: string,
     tagData: UpdateTagInput
 ): Promise<Tag | null> => {
-    return await tagRepository.updateTag(id, userId, tagData);
+    if (tagData.name !== undefined && !tagData.name.trim()) {
+        throw new Error("Tag name is required");
+    }
+
+    const cleanedData: UpdateTagInput = {
+        ...tagData,
+        ...(tagData.name !== undefined ? { name: tagData.name.trim() } : {}),
+    };
+
+    return await tagRepository.updateTag(id, userId, cleanedData);
 };
 
 export const deleteTag = async (

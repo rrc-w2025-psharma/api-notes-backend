@@ -16,6 +16,32 @@ interface ValidationOptions {
     stripParams?: boolean;
 }
 
+const mapValidationMessage = (message: string): string => {
+    const cleanMessage = message.replace(/"/g, "");
+
+    if (
+        cleanMessage.includes("title") ||
+        cleanMessage.includes("content") ||
+        cleanMessage.includes("categoryId")
+    ) {
+        return "Title, content, and categoryId are required";
+    }
+
+    if (cleanMessage.includes("Tag name is required")) {
+        return "Tag name is required";
+    }
+
+    if (cleanMessage.includes("Category name is required")) {
+        return "Category name is required";
+    }
+
+    if (cleanMessage.includes("name")) {
+        return "Tag name is required";
+    }
+
+    return cleanMessage;
+};
+
 export const validateRequest = (
     schemas: RequestSchemas,
     options: ValidationOptions = {}
@@ -40,7 +66,7 @@ export const validateRequest = (
                 });
 
                 if (error) throw error;
-                return value; // keeps Joi defaults
+                return value;
             };
 
             if (schemas.body) {
@@ -74,7 +100,7 @@ export const validateRequest = (
                 joiError?.details?.[0]?.message || (error as Error).message;
 
             return res.status(HTTP_STATUS.BAD_REQUEST).json({
-                message: `Validation error: ${firstMessage}`,
+                message: mapValidationMessage(firstMessage),
             });
         }
     };

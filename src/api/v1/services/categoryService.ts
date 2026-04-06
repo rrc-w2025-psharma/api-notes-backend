@@ -24,10 +24,14 @@ export const createCategory = async (
     userId: string,
     categoryData: CreateCategoryInput
 ): Promise<Category> => {
+    if (!categoryData.name || !categoryData.name.trim()) {
+        throw new Error("Category name is required");
+    }
+
     const newCategory: Category = {
         id: generateCategoryId(),
         userId,
-        name: categoryData.name,
+        name: categoryData.name.trim(),
     };
 
     return await categoryRepository.createCategory(newCategory);
@@ -38,7 +42,18 @@ export const updateCategory = async (
     userId: string,
     categoryData: UpdateCategoryInput
 ): Promise<Category | null> => {
-    return await categoryRepository.updateCategory(id, userId, categoryData);
+    if (categoryData.name !== undefined && !categoryData.name.trim()) {
+        throw new Error("Category name is required");
+    }
+
+    const cleanedData: UpdateCategoryInput = {
+        ...categoryData,
+        ...(categoryData.name !== undefined
+            ? { name: categoryData.name.trim() }
+            : {}),
+    };
+
+    return await categoryRepository.updateCategory(id, userId, cleanedData);
 };
 
 export const deleteCategory = async (

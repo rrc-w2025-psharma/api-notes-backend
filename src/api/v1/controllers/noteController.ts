@@ -3,9 +3,18 @@ import { HTTP_STATUS } from "../../../constants/httpConstants";
 import * as noteService from "../services/noteService";
 import { CreateNoteInput, UpdateNoteInput } from "../models/noteModel";
 
-export const getAllNotes = (req: Request, res: Response): void => {
+export const getAllNotes = async (req: Request, res: Response): Promise<void> => {
     try {
-        const notes = noteService.getAllNotes(res.locals.uid);
+        const userId = res.locals.uid;
+
+        if (!userId) {
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                message: "Unauthorized",
+            });
+            return;
+        }
+
+        const notes = await noteService.getAllNotes(userId);
 
         res.status(HTTP_STATUS.OK).json({
             message: "Notes retrieved successfully",
@@ -18,10 +27,19 @@ export const getAllNotes = (req: Request, res: Response): void => {
     }
 };
 
-export const getNoteById = (req: Request, res: Response): void => {
+export const getNoteById = async (req: Request, res: Response): Promise<void> => {
     try {
+        const userId = res.locals.uid;
+
+        if (!userId) {
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                message: "Unauthorized",
+            });
+            return;
+        }
+
         const { id } = req.params;
-        const note = noteService.getNoteById(id, res.locals.uid);
+        const note = await noteService.getNoteById(id, userId);
 
         if (!note) {
             res.status(HTTP_STATUS.NOT_FOUND).json({
@@ -41,23 +59,24 @@ export const getNoteById = (req: Request, res: Response): void => {
     }
 };
 
-export const createNote = (req: Request, res: Response): void => {
+export const createNote = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { title, content, categoryId, tagIds }: CreateNoteInput = req.body;
+        const userId = res.locals.uid;
 
-        if (!title || !content || !categoryId) {
-            res.status(HTTP_STATUS.BAD_REQUEST).json({
-                message: "Title, content, and categoryId are required",
+        if (!userId) {
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                message: "Unauthorized",
             });
             return;
         }
 
-        const newNote = noteService.createNote({
+        const { title, content, categoryId, tagIds }: CreateNoteInput = req.body;
+
+        const newNote = await noteService.createNote(userId, {
             title,
             content,
             categoryId,
             tagIds,
-            userId: res.locals.uid,
         });
 
         res.status(HTTP_STATUS.CREATED).json({
@@ -71,19 +90,21 @@ export const createNote = (req: Request, res: Response): void => {
     }
 };
 
-export const updateNote = (req: Request, res: Response): void => {
+export const updateNote = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { id } = req.params;
-        const { title, content, categoryId, tagIds }: UpdateNoteInput = req.body;
+        const userId = res.locals.uid;
 
-        if (!title && !content && !categoryId && !tagIds) {
-            res.status(HTTP_STATUS.BAD_REQUEST).json({
-                message: "At least one field is required to update the note",
+        if (!userId) {
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                message: "Unauthorized",
             });
             return;
         }
 
-        const updatedNote = noteService.updateNote(id, res.locals.uid, {
+        const { id } = req.params;
+        const { title, content, categoryId, tagIds }: UpdateNoteInput = req.body;
+
+        const updatedNote = await noteService.updateNote(id, userId, {
             title,
             content,
             categoryId,
@@ -108,10 +129,19 @@ export const updateNote = (req: Request, res: Response): void => {
     }
 };
 
-export const deleteNote = (req: Request, res: Response): void => {
+export const deleteNote = async (req: Request, res: Response): Promise<void> => {
     try {
+        const userId = res.locals.uid;
+
+        if (!userId) {
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                message: "Unauthorized",
+            });
+            return;
+        }
+
         const { id } = req.params;
-        const deleted = noteService.deleteNote(id, res.locals.uid);
+        const deleted = await noteService.deleteNote(id, userId);
 
         if (!deleted) {
             res.status(HTTP_STATUS.NOT_FOUND).json({

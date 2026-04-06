@@ -1,6 +1,28 @@
 import request from "supertest";
 import app from "../src/app";
 
+jest.mock("../src/api/v1/services/noteService", () => ({
+    getAllNotes: jest.fn().mockResolvedValue([]),
+    getNoteById: jest.fn((id) => {
+        if (id === "note-does-not-exist") return null;
+        return Promise.resolve({
+            id,
+            title: "Test Note",
+            content: "Test Content",
+        });
+    }),
+    createNote: jest.fn().mockResolvedValue({
+        id: "test-id",
+        title: "Test Note",
+        content: "Test Content",
+    }),
+    updateNote: jest.fn().mockResolvedValue({
+        id: "test-id",
+        title: "Updated Note Title",
+    }),
+    deleteNote: jest.fn().mockResolvedValue(true),
+}));
+
 describe("Note API Endpoints", () => {
     let createdNoteId: string;
 
@@ -48,7 +70,7 @@ describe("Note API Endpoints", () => {
             .set('Authorization', 'Bearer fake-token')
             .send({
                 title: "Updated Note Title",
-        });
+            });
 
         expect(response.status).toBe(200);
         expect(response.body.message).toBe("Note updated successfully");

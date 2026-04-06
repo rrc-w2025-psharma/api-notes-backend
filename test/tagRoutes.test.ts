@@ -1,6 +1,26 @@
 import request from "supertest";
 import app from "../src/app";
 
+jest.mock("../src/api/v1/services/tagService", () => ({
+    getAllTags: jest.fn().mockResolvedValue([]),
+    getTagById: jest.fn((id) => {
+        if (id === "tag-does-not-exist") return null;
+        return Promise.resolve({
+            id,
+            name: "urgent",
+        });
+    }),
+    createTag: jest.fn().mockResolvedValue({
+        id: "test-id",
+        name: "urgent",
+    }),
+    updateTag: jest.fn().mockResolvedValue({
+        id: "test-id",
+        name: "important",
+    }),
+    deleteTag: jest.fn().mockResolvedValue(true),
+}));
+
 describe("Tag API Endpoints", () => {
     let createdTagId: string;
 

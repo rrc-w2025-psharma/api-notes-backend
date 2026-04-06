@@ -17,11 +17,7 @@ const router: Router = express.Router();
 
 router.get("/", authenticate, getAllCategories);
 router.get("/:id", authenticate, getCategoryById);
-router.post(
-    "/",
-    authenticate,
-    createCategory
-);
+router.post("/", authenticate, validate(createCategorySchema), createCategory);
 router.put(
     "/:id",
     authenticate,

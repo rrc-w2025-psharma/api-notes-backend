@@ -8,10 +8,10 @@ const authenticate = async (
     next: NextFunction
 ): Promise<void> => {
     try {
-        if (process.env.NODE_ENV === 'test') {
-            res.locals.uid = 'test-uid';
-            res.locals.email = 'test@example.com';
-            res.locals.role = 'user';
+        if (process.env.NODE_ENV === "test") {
+            res.locals.uid = "test-uid";
+            res.locals.email = "test@example.com";
+            res.locals.role = "user";
             return next();
         }
 
@@ -38,6 +38,7 @@ const authenticate = async (
 
         next();
     } catch (error) {
+        console.log("AUTH ERROR:", error);``
         res.status(HTTP_STATUS.UNAUTHORIZED).json({
             message: "Unauthorized: Invalid token",
         });
