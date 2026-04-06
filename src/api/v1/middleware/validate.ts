@@ -79,3 +79,5 @@ export const validateRequest = (
         }
     };
 };
+
+export default (schema: ObjectSchema) => validateRequest({ body: schema });
