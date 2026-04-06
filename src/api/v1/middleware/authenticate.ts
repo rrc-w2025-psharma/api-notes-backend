@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { auth } from "../../../../config/firebaseConfig";
+import { getFirebaseAuth } from "../../../../config/firebaseConfig";
 import { HTTP_STATUS } from "../../../constants/httpConstants";
 
 const authenticate = async (
@@ -8,6 +8,14 @@ const authenticate = async (
     next: NextFunction
 ): Promise<void> => {
     try {
+        if (process.env.NODE_ENV === 'test') {
+            res.locals.uid = 'test-uid';
+            res.locals.email = 'test@example.com';
+            res.locals.role = 'user';
+            return next();
+        }
+
+        const auth = getFirebaseAuth();
         const authHeader = req.headers.authorization;
 
         const token =

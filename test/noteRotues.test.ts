@@ -5,12 +5,15 @@ describe("Note API Endpoints", () => {
     let createdNoteId: string;
 
     it("should create a note", async () => {
-        const response = await request(app).post("/api/v1/notes").send({
-            title: "Test Note",
-            content: "This is a test note",
-            categoryId: "category-1",
-            tagIds: ["tag-1"],
-        });
+        const response = await request(app)
+            .post("/api/v1/notes")
+            .set('Authorization', 'Bearer fake-token')
+            .send({
+                title: "Test Note",
+                content: "This is a test note",
+                categoryId: "category-1",
+                tagIds: ["tag-1"],
+            });
 
         createdNoteId = response.body.data.id;
 
@@ -20,7 +23,9 @@ describe("Note API Endpoints", () => {
     });
 
     it("should get all notes", async () => {
-        const response = await request(app).get("/api/v1/notes");
+        const response = await request(app)
+            .get("/api/v1/notes")
+            .set('Authorization', 'Bearer fake-token');
 
         expect(response.status).toBe(200);
         expect(response.body.message).toBe("Notes retrieved successfully");
@@ -28,7 +33,9 @@ describe("Note API Endpoints", () => {
     });
 
     it("should get a note by id", async () => {
-        const response = await request(app).get(`/api/v1/notes/${createdNoteId}`);
+        const response = await request(app)
+            .get(`/api/v1/notes/${createdNoteId}`)
+            .set('Authorization', 'Bearer fake-token');
 
         expect(response.status).toBe(200);
         expect(response.body.message).toBe("Note retrieved successfully");
@@ -36,8 +43,11 @@ describe("Note API Endpoints", () => {
     });
 
     it("should update a note by id", async () => {
-        const response = await request(app).put(`/api/v1/notes/${createdNoteId}`).send({
-            title: "Updated Note Title",
+        const response = await request(app)
+            .put(`/api/v1/notes/${createdNoteId}`)
+            .set('Authorization', 'Bearer fake-token')
+            .send({
+                title: "Updated Note Title",
         });
 
         expect(response.status).toBe(200);
@@ -46,16 +56,21 @@ describe("Note API Endpoints", () => {
     });
 
     it("should delete a note by id", async () => {
-        const response = await request(app).delete(`/api/v1/notes/${createdNoteId}`);
+        const response = await request(app)
+            .delete(`/api/v1/notes/${createdNoteId}`)
+            .set('Authorization', 'Bearer fake-token');
 
         expect(response.status).toBe(200);
         expect(response.body.message).toBe("Note deleted successfully");
     });
 
     it("should return 400 when creating a note with missing required fields", async () => {
-        const response = await request(app).post("/api/v1/notes").send({
-            title: "",
-        });
+        const response = await request(app)
+            .post("/api/v1/notes")
+            .set('Authorization', 'Bearer fake-token')
+            .send({
+                title: "",
+            });
 
         expect(response.status).toBe(400);
         expect(response.body.message).toBe(
@@ -64,7 +79,9 @@ describe("Note API Endpoints", () => {
     });
 
     it("should return 404 when getting a note that does not exist", async () => {
-        const response = await request(app).get("/api/v1/notes/note-does-not-exist");
+        const response = await request(app)
+            .get("/api/v1/notes/note-does-not-exist")
+            .set('Authorization', 'Bearer fake-token');
 
         expect(response.status).toBe(404);
         expect(response.body.message).toBe("Note not found");

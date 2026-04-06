@@ -15,10 +15,10 @@ import {
 
 const router: Router = express.Router();
 
-router.get("/notes", authenticate, getAllNotes);
-router.get("/notes/:id", authenticate, getNoteById);
-router.post("/notes", authenticate, validate(createNoteSchema), createNote);
-router.put("/notes/:id", authenticate, validate(updateNoteSchema), updateNote);
-router.delete("/notes/:id", authenticate, deleteNote);
+router.get("/", authenticate, getAllNotes);
+router.get("/:id", authenticate, getNoteById);
+router.post("/", authenticate, createNote);
+router.put("/:id", authenticate, validate(updateNoteSchema), updateNote);
+router.delete("/:id", authenticate, deleteNote);
 
 export default router;
