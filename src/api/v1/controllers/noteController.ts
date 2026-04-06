@@ -5,7 +5,7 @@ import { CreateNoteInput, UpdateNoteInput } from "../models/noteModel";
 
 export const getAllNotes = (req: Request, res: Response): void => {
     try {
-        const notes = noteService.getAllNotes();
+        const notes = noteService.getAllNotes(res.locals.uid);
 
         res.status(HTTP_STATUS.OK).json({
             message: "Notes retrieved successfully",
@@ -21,7 +21,7 @@ export const getAllNotes = (req: Request, res: Response): void => {
 export const getNoteById = (req: Request, res: Response): void => {
     try {
         const { id } = req.params;
-        const note = noteService.getNoteById(id);
+        const note = noteService.getNoteById(id, res.locals.uid);
 
         if (!note) {
             res.status(HTTP_STATUS.NOT_FOUND).json({
@@ -57,6 +57,7 @@ export const createNote = (req: Request, res: Response): void => {
             content,
             categoryId,
             tagIds,
+            userId: res.locals.uid,
         });
 
         res.status(HTTP_STATUS.CREATED).json({
@@ -82,7 +83,7 @@ export const updateNote = (req: Request, res: Response): void => {
             return;
         }
 
-        const updatedNote = noteService.updateNote(id, {
+        const updatedNote = noteService.updateNote(id, res.locals.uid, {
             title,
             content,
             categoryId,
@@ -110,7 +111,7 @@ export const updateNote = (req: Request, res: Response): void => {
 export const deleteNote = (req: Request, res: Response): void => {
     try {
         const { id } = req.params;
-        const deleted = noteService.deleteNote(id);
+        const deleted = noteService.deleteNote(id, res.locals.uid);
 
         if (!deleted) {
             res.status(HTTP_STATUS.NOT_FOUND).json({

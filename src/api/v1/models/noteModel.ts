@@ -4,6 +4,7 @@ export interface Note {
     content: string;
     categoryId: string;
     tagIds: string[];
+    userId: string;
 }
 
 export interface CreateNoteInput {

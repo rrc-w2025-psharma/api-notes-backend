@@ -6,18 +6,19 @@ const generateTagId = (): string => {
     return `tag-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 };
 
-export const getAllTags = (): Tag[] => {
-    return structuredClone(tags);
+export const getAllTags = (userId: string): Tag[] => {
+    return structuredClone(tags.filter(tag => tag.userId === userId));
 };
 
-export const getTagById = (id: string): Tag | undefined => {
-    return tags.find((tag: Tag) => tag.id === id);
+export const getTagById = (id: string, userId: string): Tag | undefined => {
+    return tags.find((tag: Tag) => tag.id === id && tag.userId === userId);
 };
 
-export const createTag = (tagData: CreateTagInput): Tag => {
+export const createTag = (tagData: CreateTagInput & { userId: string }): Tag => {
     const newTag: Tag = {
         id: generateTagId(),
         name: tagData.name,
+        userId: tagData.userId,
     };
 
     tags.push(newTag);
@@ -26,9 +27,10 @@ export const createTag = (tagData: CreateTagInput): Tag => {
 
 export const updateTag = (
     id: string,
+    userId: string,
     tagData: UpdateTagInput
 ): Tag | undefined => {
-    const tagIndex: number = tags.findIndex((tag: Tag) => tag.id === id);
+    const tagIndex: number = tags.findIndex((tag: Tag) => tag.id === id && tag.userId === userId);
 
     if (tagIndex === -1) {
         return undefined;
@@ -42,8 +44,8 @@ export const updateTag = (
     return structuredClone(tags[tagIndex]);
 };
 
-export const deleteTag = (id: string): boolean => {
-    const tagIndex: number = tags.findIndex((tag: Tag) => tag.id === id);
+export const deleteTag = (id: string, userId: string): boolean => {
+    const tagIndex: number = tags.findIndex((tag: Tag) => tag.id === id && tag.userId === userId);
 
     if (tagIndex === -1) {
         return false;

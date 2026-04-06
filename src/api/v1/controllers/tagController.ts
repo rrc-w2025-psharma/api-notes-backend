@@ -5,7 +5,7 @@ import { CreateTagInput, UpdateTagInput } from "../models/tagModel";
 
 export const getAllTags = (req: Request, res: Response): void => {
     try {
-        const tags = tagService.getAllTags();
+        const tags = tagService.getAllTags(res.locals.uid);
 
         res.status(HTTP_STATUS.OK).json({
             message: "Tags retrieved successfully",
@@ -21,7 +21,7 @@ export const getAllTags = (req: Request, res: Response): void => {
 export const getTagById = (req: Request, res: Response): void => {
     try {
         const { id } = req.params;
-        const tag = tagService.getTagById(id);
+        const tag = tagService.getTagById(id, res.locals.uid);
 
         if (!tag) {
             res.status(HTTP_STATUS.NOT_FOUND).json({
@@ -52,7 +52,7 @@ export const createTag = (req: Request, res: Response): void => {
             return;
         }
 
-        const newTag = tagService.createTag({ name });
+        const newTag = tagService.createTag({ name, userId: res.locals.uid });
 
         res.status(HTTP_STATUS.CREATED).json({
             message: "Tag created successfully",
@@ -77,7 +77,7 @@ export const updateTag = (req: Request, res: Response): void => {
             return;
         }
 
-        const updatedTag = tagService.updateTag(id, { name });
+        const updatedTag = tagService.updateTag(id, res.locals.uid, { name });
 
         if (!updatedTag) {
             res.status(HTTP_STATUS.NOT_FOUND).json({
@@ -100,7 +100,7 @@ export const updateTag = (req: Request, res: Response): void => {
 export const deleteTag = (req: Request, res: Response): void => {
     try {
         const { id } = req.params;
-        const deleted = tagService.deleteTag(id);
+        const deleted = tagService.deleteTag(id, res.locals.uid);
 
         if (!deleted) {
             res.status(HTTP_STATUS.NOT_FOUND).json({

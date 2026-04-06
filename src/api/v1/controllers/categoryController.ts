@@ -8,7 +8,7 @@ import {
 
 export const getAllCategories = (req: Request, res: Response): void => {
     try {
-        const categories = categoryService.getAllCategories();
+        const categories = categoryService.getAllCategories(res.locals.uid);
 
         res.status(HTTP_STATUS.OK).json({
             message: "Categories retrieved successfully",
@@ -24,7 +24,7 @@ export const getAllCategories = (req: Request, res: Response): void => {
 export const getCategoryById = (req: Request, res: Response): void => {
     try {
         const { id } = req.params;
-        const category = categoryService.getCategoryById(id);
+        const category = categoryService.getCategoryById(id, res.locals.uid);
 
         if (!category) {
             res.status(HTTP_STATUS.NOT_FOUND).json({
@@ -55,7 +55,7 @@ export const createCategory = (req: Request, res: Response): void => {
             return;
         }
 
-        const newCategory = categoryService.createCategory({ name });
+        const newCategory = categoryService.createCategory({ name, userId: res.locals.uid });
 
         res.status(HTTP_STATUS.CREATED).json({
             message: "Category created successfully",
@@ -80,7 +80,7 @@ export const updateCategory = (req: Request, res: Response): void => {
             return;
         }
 
-        const updatedCategory = categoryService.updateCategory(id, { name });
+        const updatedCategory = categoryService.updateCategory(id, res.locals.uid, { name });
 
         if (!updatedCategory) {
             res.status(HTTP_STATUS.NOT_FOUND).json({
@@ -103,7 +103,7 @@ export const updateCategory = (req: Request, res: Response): void => {
 export const deleteCategory = (req: Request, res: Response): void => {
     try {
         const { id } = req.params;
-        const deleted = categoryService.deleteCategory(id);
+        const deleted = categoryService.deleteCategory(id, res.locals.uid);
 
         if (!deleted) {
             res.status(HTTP_STATUS.NOT_FOUND).json({
