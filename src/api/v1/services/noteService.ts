@@ -1,59 +1,48 @@
 import { CreateNoteInput, Note, UpdateNoteInput } from "../models/noteModel";
-
-const notes: Note[] = [];
+import * as noteRepository from "../repositories/noteRepository";
 
 const generateNoteId = (): string => {
     return `note-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 };
 
-export const getAllNotes = (userId: string): Note[] => {
-    return structuredClone(notes.filter(note => note.userId === userId));
+export const getAllNotes = async (userId: string): Promise<Note[]> => {
+    return await noteRepository.getAllNotes(userId);
 };
 
-export const getNoteById = (id: string, userId: string): Note | undefined => {
-    return notes.find((note: Note) => note.id === id && note.userId === userId);
+export const getNoteById = async (
+    id: string,
+    userId: string
+): Promise<Note | null> => {
+    return await noteRepository.getNoteById(id, userId);
 };
 
-export const createNote = (noteData: CreateNoteInput & { userId: string }): Note => {
+export const createNote = async (
+    userId: string,
+    noteData: CreateNoteInput
+): Promise<Note> => {
     const newNote: Note = {
         id: generateNoteId(),
+        userId,
         title: noteData.title,
         content: noteData.content,
         categoryId: noteData.categoryId,
         tagIds: noteData.tagIds ?? [],
-        userId: noteData.userId,
     };
 
-    notes.push(newNote);
-    return structuredClone(newNote);
+    return await noteRepository.createNote(newNote);
 };
 
-export const updateNote = (
+export const updateNote = async (
     id: string,
     userId: string,
     noteData: UpdateNoteInput
-): Note | undefined => {
-    const noteIndex: number = notes.findIndex((note: Note) => note.id === id && note.userId === userId);
-
-    if (noteIndex === -1) {
-        return undefined;
-    }
-
-    notes[noteIndex] = {
-        ...notes[noteIndex],
-        ...noteData,
-    };
-
-    return structuredClone(notes[noteIndex]);
+): Promise<Note | null> => {
+    return await noteRepository.updateNote(id, userId, noteData);
 };
 
-export const deleteNote = (id: string, userId: string): boolean => {
-    const noteIndex: number = notes.findIndex((note: Note) => note.id === id && note.userId === userId);
-
-    if (noteIndex === -1) {
-        return false;
-    }
-
-    notes.splice(noteIndex, 1);
-    return true;
+export const deleteNote = async (
+    id: string,
+    userId: string
+): Promise<boolean> => {
+    return await noteRepository.deleteNote(id, userId);
 };

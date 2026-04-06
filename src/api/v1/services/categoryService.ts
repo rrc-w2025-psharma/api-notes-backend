@@ -3,64 +3,47 @@ import {
     CreateCategoryInput,
     UpdateCategoryInput,
 } from "../models/categoryModel";
-
-const categories: Category[] = [];
+import * as categoryRepository from "../repositories/categoryRepository";
 
 const generateCategoryId = (): string => {
     return `category-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 };
 
-export const getAllCategories = (userId: string): Category[] => {
-    return structuredClone(categories.filter(category => category.userId === userId));
+export const getAllCategories = async (userId: string): Promise<Category[]> => {
+    return await categoryRepository.getAllCategories(userId);
 };
 
-export const getCategoryById = (id: string, userId: string): Category | undefined => {
-    return categories.find((category: Category) => category.id === id && category.userId === userId);
+export const getCategoryById = async (
+    id: string,
+    userId: string
+): Promise<Category | null> => {
+    return await categoryRepository.getCategoryById(id, userId);
 };
 
-export const createCategory = (
-    categoryData: CreateCategoryInput & { userId: string }
-): Category => {
+export const createCategory = async (
+    userId: string,
+    categoryData: CreateCategoryInput
+): Promise<Category> => {
     const newCategory: Category = {
         id: generateCategoryId(),
+        userId,
         name: categoryData.name,
-        userId: categoryData.userId,
     };
 
-    categories.push(newCategory);
-    return structuredClone(newCategory);
+    return await categoryRepository.createCategory(newCategory);
 };
 
-export const updateCategory = (
+export const updateCategory = async (
     id: string,
     userId: string,
     categoryData: UpdateCategoryInput
-): Category | undefined => {
-    const categoryIndex: number = categories.findIndex(
-        (category: Category) => category.id === id && category.userId === userId
-    );
-
-    if (categoryIndex === -1) {
-        return undefined;
-    }
-
-    categories[categoryIndex] = {
-        ...categories[categoryIndex],
-        ...categoryData,
-    };
-
-    return structuredClone(categories[categoryIndex]);
+): Promise<Category | null> => {
+    return await categoryRepository.updateCategory(id, userId, categoryData);
 };
 
-export const deleteCategory = (id: string, userId: string): boolean => {
-    const categoryIndex: number = categories.findIndex(
-        (category: Category) => category.id === id && category.userId === userId
-    );
-
-    if (categoryIndex === -1) {
-        return false;
-    }
-
-    categories.splice(categoryIndex, 1);
-    return true;
+export const deleteCategory = async (
+    id: string,
+    userId: string
+): Promise<boolean> => {
+    return await categoryRepository.deleteCategory(id, userId);
 };
