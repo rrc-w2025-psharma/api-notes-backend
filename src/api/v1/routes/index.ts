@@ -12,7 +12,7 @@ router.use(healthCheckRoute);
 router.use(categoryRoutes);
 router.use(noteRoutes);
 router.use(tagRoutes);
-router.use(tagRoutes);
+router.use(tagRoutes); 
 router.use(userRoutes);
 router.use(adminRoutes);
 
