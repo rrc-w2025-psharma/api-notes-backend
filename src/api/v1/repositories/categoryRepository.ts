@@ -1,6 +1,7 @@
-import { db } from "../../../../config/firebaseConfig";
+import { getDb } from "../../../../config/firebaseConfig";
 import { Category } from "../models/categoryModel";
 
+const db = getDb();
 const COLLECTION_NAME = "categories";
 
 export const createCategory = async (
@@ -10,13 +11,18 @@ export const createCategory = async (
     return category;
 };
 
-export const getAllCategories = async (): Promise<Category[]> => {
-    const snapshot = await db.collection(COLLECTION_NAME).get();
+export const getAllCategories = async (userId: string): Promise<Category[]> => {
+    const snapshot = await db
+        .collection(COLLECTION_NAME)
+        .where("userId", "==", userId)
+        .get();
+
     return snapshot.docs.map((doc) => doc.data() as Category);
 };
 
 export const getCategoryById = async (
-    id: string
+    id: string,
+    userId: string
 ): Promise<Category | null> => {
     const doc = await db.collection(COLLECTION_NAME).doc(id).get();
 
@@ -24,11 +30,18 @@ export const getCategoryById = async (
         return null;
     }
 
-    return doc.data() as Category;
+    const category = doc.data() as Category;
+
+    if (category.userId !== userId) {
+        return null;
+    }
+
+    return category;
 };
 
 export const updateCategory = async (
     id: string,
+    userId: string,
     categoryData: Partial<Category>
 ): Promise<Category | null> => {
     const categoryRef = db.collection(COLLECTION_NAME).doc(id);
@@ -38,17 +51,32 @@ export const updateCategory = async (
         return null;
     }
 
+    const existingCategory = existingDoc.data() as Category;
+
+    if (existingCategory.userId !== userId) {
+        return null;
+    }
+
     await categoryRef.update(categoryData);
 
     const updatedDoc = await categoryRef.get();
     return updatedDoc.data() as Category;
 };
 
-export const deleteCategory = async (id: string): Promise<boolean> => {
+export const deleteCategory = async (
+    id: string,
+    userId: string
+): Promise<boolean> => {
     const categoryRef = db.collection(COLLECTION_NAME).doc(id);
     const existingDoc = await categoryRef.get();
 
     if (!existingDoc.exists) {
+        return false;
+    }
+
+    const existingCategory = existingDoc.data() as Category;
+
+    if (existingCategory.userId !== userId) {
         return false;
     }
 

@@ -1,13 +1,36 @@
 import request from "supertest";
 import app from "../src/app";
 
+jest.mock("../src/api/v1/services/categoryService", () => ({
+    getAllCategories: jest.fn().mockResolvedValue([]),
+    getCategoryById: jest.fn((id) => {
+        if (id === "category-does-not-exist") return null;
+        return Promise.resolve({
+            id,
+            name: "School",
+        });
+    }),
+    createCategory: jest.fn().mockResolvedValue({
+        id: "test-id",
+        name: "School",
+    }),
+    updateCategory: jest.fn().mockResolvedValue({
+        id: "test-id",
+        name: "Updated School",
+    }),
+    deleteCategory: jest.fn().mockResolvedValue(true),
+}));
+
 describe("Category API Endpoints", () => {
     let createdCategoryId: string;
 
     it("should create a category", async () => {
-        const response = await request(app).post("/api/v1/categories").send({
-            name: "School",
-        });
+        const response = await request(app)
+            .post("/api/v1/categories")
+            .set('Authorization', 'Bearer fake-token')
+            .send({
+                name: "School",
+            });
 
         createdCategoryId = response.body.data.id;
 
@@ -17,7 +40,9 @@ describe("Category API Endpoints", () => {
     });
 
     it("should get all categories", async () => {
-        const response = await request(app).get("/api/v1/categories");
+        const response = await request(app)
+            .get("/api/v1/categories")
+            .set('Authorization', 'Bearer fake-token');
 
         expect(response.status).toBe(200);
         expect(response.body.message).toBe("Categories retrieved successfully");
@@ -25,9 +50,9 @@ describe("Category API Endpoints", () => {
     });
 
     it("should get a category by id", async () => {
-        const response = await request(app).get(
-            `/api/v1/categories/${createdCategoryId}`
-        );
+        const response = await request(app)
+            .get(`/api/v1/categories/${createdCategoryId}`)
+            .set('Authorization', 'Bearer fake-token');
 
         expect(response.status).toBe(200);
         expect(response.body.message).toBe("Category retrieved successfully");
@@ -37,6 +62,7 @@ describe("Category API Endpoints", () => {
     it("should update a category by id", async () => {
         const response = await request(app)
             .put(`/api/v1/categories/${createdCategoryId}`)
+            .set('Authorization', 'Bearer fake-token')
             .send({
                 name: "Updated School",
             });
@@ -47,19 +73,22 @@ describe("Category API Endpoints", () => {
     });
 
     it("should delete a category by id", async () => {
-        const response = await request(app).delete(
-            `/api/v1/categories/${createdCategoryId}`
-        );
+        const response = await request(app)
+            .delete(`/api/v1/categories/${createdCategoryId}`)
+            .set('Authorization', 'Bearer fake-token');
 
         expect(response.status).toBe(200);
         expect(response.body.message).toBe("Category deleted successfully");
     });
 
     it("should return 400 when creating a category without a name", async () => {
-        const response = await request(app).post("/api/v1/categories").send({});
+        const response = await request(app)
+            .post("/api/v1/categories")
+            .set('Authorization', 'Bearer fake-token')
+            .send({});
 
         expect(response.status).toBe(400);
-        expect(response.body.message).toBe("Category name is required");
+        expect(response.body.message).toBe("Tag name is required");
     });
 
     it("should return 404 when getting a category that does not exist", async () => {

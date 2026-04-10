@@ -3,62 +3,62 @@ import {
     CreateCategoryInput,
     UpdateCategoryInput,
 } from "../models/categoryModel";
-
-const categories: Category[] = [];
+import * as categoryRepository from "../repositories/categoryRepository";
 
 const generateCategoryId = (): string => {
     return `category-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 };
 
-export const getAllCategories = (): Category[] => {
-    return structuredClone(categories);
+export const getAllCategories = async (userId: string): Promise<Category[]> => {
+    return await categoryRepository.getAllCategories(userId);
 };
 
-export const getCategoryById = (id: string): Category | undefined => {
-    return categories.find((category: Category) => category.id === id);
+export const getCategoryById = async (
+    id: string,
+    userId: string
+): Promise<Category | null> => {
+    return await categoryRepository.getCategoryById(id, userId);
 };
 
-export const createCategory = (
+export const createCategory = async (
+    userId: string,
     categoryData: CreateCategoryInput
-): Category => {
+): Promise<Category> => {
+    if (!categoryData.name || !categoryData.name.trim()) {
+        throw new Error("Category name is required");
+    }
+
     const newCategory: Category = {
         id: generateCategoryId(),
-        name: categoryData.name,
+        userId,
+        name: categoryData.name.trim(),
     };
 
-    categories.push(newCategory);
-    return structuredClone(newCategory);
+    return await categoryRepository.createCategory(newCategory);
 };
 
-export const updateCategory = (
+export const updateCategory = async (
     id: string,
+    userId: string,
     categoryData: UpdateCategoryInput
-): Category | undefined => {
-    const categoryIndex: number = categories.findIndex(
-        (category: Category) => category.id === id
-    );
-
-    if (categoryIndex === -1) {
-        return undefined;
+): Promise<Category | null> => {
+    if (categoryData.name !== undefined && !categoryData.name.trim()) {
+        throw new Error("Category name is required");
     }
 
-    categories[categoryIndex] = {
-        ...categories[categoryIndex],
+    const cleanedData: UpdateCategoryInput = {
         ...categoryData,
+        ...(categoryData.name !== undefined
+            ? { name: categoryData.name.trim() }
+            : {}),
     };
 
-    return structuredClone(categories[categoryIndex]);
+    return await categoryRepository.updateCategory(id, userId, cleanedData);
 };
 
-export const deleteCategory = (id: string): boolean => {
-    const categoryIndex: number = categories.findIndex(
-        (category: Category) => category.id === id
-    );
-
-    if (categoryIndex === -1) {
-        return false;
-    }
-
-    categories.splice(categoryIndex, 1);
-    return true;
+export const deleteCategory = async (
+    id: string,
+    userId: string
+): Promise<boolean> => {
+    return await categoryRepository.deleteCategory(id, userId);
 };

@@ -1,54 +1,58 @@
 import { CreateTagInput, Tag, UpdateTagInput } from "../models/tagModel";
-
-const tags: Tag[] = [];
+import * as tagRepository from "../repositories/tagRepository";
 
 const generateTagId = (): string => {
     return `tag-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 };
 
-export const getAllTags = (): Tag[] => {
-    return structuredClone(tags);
+export const getAllTags = async (userId: string): Promise<Tag[]> => {
+    return await tagRepository.getAllTags(userId);
 };
 
-export const getTagById = (id: string): Tag | undefined => {
-    return tags.find((tag: Tag) => tag.id === id);
+export const getTagById = async (
+    id: string,
+    userId: string
+): Promise<Tag | null> => {
+    return await tagRepository.getTagById(id, userId);
 };
 
-export const createTag = (tagData: CreateTagInput): Tag => {
+export const createTag = async (
+    userId: string,
+    tagData: CreateTagInput
+): Promise<Tag> => {
+    if (!tagData.name || !tagData.name.trim()) {
+        throw new Error("Tag name is required");
+    }
+
     const newTag: Tag = {
         id: generateTagId(),
-        name: tagData.name,
+        userId,
+        name: tagData.name.trim(),
     };
 
-    tags.push(newTag);
-    return structuredClone(newTag);
+    return await tagRepository.createTag(newTag);
 };
 
-export const updateTag = (
+export const updateTag = async (
     id: string,
+    userId: string,
     tagData: UpdateTagInput
-): Tag | undefined => {
-    const tagIndex: number = tags.findIndex((tag: Tag) => tag.id === id);
-
-    if (tagIndex === -1) {
-        return undefined;
+): Promise<Tag | null> => {
+    if (tagData.name !== undefined && !tagData.name.trim()) {
+        throw new Error("Tag name is required");
     }
 
-    tags[tagIndex] = {
-        ...tags[tagIndex],
+    const cleanedData: UpdateTagInput = {
         ...tagData,
+        ...(tagData.name !== undefined ? { name: tagData.name.trim() } : {}),
     };
 
-    return structuredClone(tags[tagIndex]);
+    return await tagRepository.updateTag(id, userId, cleanedData);
 };
 
-export const deleteTag = (id: string): boolean => {
-    const tagIndex: number = tags.findIndex((tag: Tag) => tag.id === id);
-
-    if (tagIndex === -1) {
-        return false;
-    }
-
-    tags.splice(tagIndex, 1);
-    return true;
+export const deleteTag = async (
+    id: string,
+    userId: string
+): Promise<boolean> => {
+    return await tagRepository.deleteTag(id, userId);
 };

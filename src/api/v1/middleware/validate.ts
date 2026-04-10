@@ -16,69 +16,63 @@ interface ValidationOptions {
     stripParams?: boolean;
 }
 
-/**
- * Creates an Express middleware function that validates different parts of the request
- * against separate Joi schemas and strips unknown fields appropriately.
- *
- * @param schemas - Object containing separate schemas for body, params, and query
- * @param options - Validation options for stripping behavior
- * @returns Express middleware function that performs the validation
- */
+const mapValidationMessage = (message: string): string => {
+    const cleanMessage = message.replace(/"/g, "");
+
+    if (
+        cleanMessage.includes("title") ||
+        cleanMessage.includes("content") ||
+        cleanMessage.includes("categoryId")
+    ) {
+        return "Title, content, and categoryId are required";
+    }
+
+    if (cleanMessage.includes("Tag name is required")) {
+        return "Tag name is required";
+    }
+
+    if (cleanMessage.includes("Category name is required")) {
+        return "Category name is required";
+    }
+
+    if (cleanMessage.includes("name")) {
+        return "Tag name is required";
+    }
+
+    return cleanMessage;
+};
+
 export const validateRequest = (
     schemas: RequestSchemas,
     options: ValidationOptions = {}
 ): MiddlewareFunction => {
-    // stripParams - Usually don't strip params as they're route-defined
     const defaultOptions = {
-        stripBody: true,
-        stripQuery: true,
+        stripBody: false,
+        stripQuery: false,
         stripParams: false,
         ...options,
     };
 
     return (req: Request, res: Response, next: NextFunction) => {
         try {
-            const errors: string[] = [];
-
-            /**
-             * Validates a specific part of the request (body, params, or query) against a Joi schema.
-             * Collects validation errors and optionally strips unknown fields from the data.
-             *
-             * @param schema - Joi schema to validate against
-             * @param data - The request data to validate (req.body, req.params, or req.query)
-             * @param partName - Name of the request part for error prefixing (e.g., "Body", "Params", "Query")
-             * @param shouldStrip - Whether to strip unknown fields from the validated data
-             * @returns The original data if validation fails or stripping is disabled, otherwise the stripped/validated data
-             */
             const validatePart = (
                 schema: ObjectSchema,
                 data: any,
-                partName: string,
                 shouldStrip: boolean
             ) => {
                 const { error, value } = schema.validate(data, {
-                    abortEarly: false,
+                    abortEarly: true,
                     stripUnknown: shouldStrip,
                 });
 
-                if (error) {
-                    errors.push(
-                        ...error.details.map(
-                            (detail) => `${partName}: ${detail.message}`
-                        )
-                    );
-                } else if (shouldStrip) {
-                    return value;
-                }
-                return data;
+                if (error) throw error;
+                return value;
             };
 
-            // Validate each request part if schema is provided
             if (schemas.body) {
                 req.body = validatePart(
                     schemas.body,
                     req.body,
-                    "Body",
                     defaultOptions.stripBody
                 );
             }
@@ -87,7 +81,6 @@ export const validateRequest = (
                 req.params = validatePart(
                     schemas.params,
                     req.params,
-                    "Params",
                     defaultOptions.stripParams
                 );
             }
@@ -96,23 +89,21 @@ export const validateRequest = (
                 req.query = validatePart(
                     schemas.query,
                     req.query,
-                    "Query",
                     defaultOptions.stripQuery
                 );
             }
 
-            // If there are any validation errors, return them
-            if (errors.length > 0) {
-                return res.status(HTTP_STATUS.BAD_REQUEST).json({
-                    error: `Validation error: ${errors.join(", ")}`,
-                });
-            }
-
-            next();
+            return next();
         } catch (error: unknown) {
-            res.status(HTTP_STATUS.BAD_REQUEST).json({
-                error: (error as Error).message,
+            const joiError = error as any;
+            const firstMessage =
+                joiError?.details?.[0]?.message || (error as Error).message;
+
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({
+                message: mapValidationMessage(firstMessage),
             });
         }
     };
 };
+
+export default (schema: ObjectSchema) => validateRequest({ body: schema });

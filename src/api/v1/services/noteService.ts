@@ -1,57 +1,73 @@
 import { CreateNoteInput, Note, UpdateNoteInput } from "../models/noteModel";
-
-const notes: Note[] = [];
+import * as noteRepository from "../repositories/noteRepository";
 
 const generateNoteId = (): string => {
     return `note-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 };
 
-export const getAllNotes = (): Note[] => {
-    return structuredClone(notes);
+export const getAllNotes = async (userId: string): Promise<Note[]> => {
+    return await noteRepository.getAllNotes(userId);
 };
 
-export const getNoteById = (id: string): Note | undefined => {
-    return notes.find((note: Note) => note.id === id);
+export const getNoteById = async (
+    id: string,
+    userId: string
+): Promise<Note | null> => {
+    return await noteRepository.getNoteById(id, userId);
 };
 
-export const createNote = (noteData: CreateNoteInput): Note => {
+export const createNote = async (
+    userId: string,
+    noteData: CreateNoteInput
+): Promise<Note> => {
+
+    if (
+        !noteData.title ||
+        !noteData.title.trim() ||
+        !noteData.content ||
+        !noteData.content.trim() ||
+        !noteData.categoryId
+    ) {
+        throw new Error("Title, content, and categoryId are required");
+    }
+
     const newNote: Note = {
         id: generateNoteId(),
-        title: noteData.title,
-        content: noteData.content,
+        userId,
+        title: noteData.title.trim(),
+        content: noteData.content.trim(),
         categoryId: noteData.categoryId,
         tagIds: noteData.tagIds ?? [],
     };
 
-    notes.push(newNote);
-    return structuredClone(newNote);
+    return await noteRepository.createNote(newNote);
 };
 
-export const updateNote = (
+export const updateNote = async (
     id: string,
+    userId: string,
     noteData: UpdateNoteInput
-): Note | undefined => {
-    const noteIndex: number = notes.findIndex((note: Note) => note.id === id);
-
-    if (noteIndex === -1) {
-        return undefined;
+): Promise<Note | null> => {
+    if (noteData.title !== undefined && !noteData.title.trim()) {
+        throw new Error("Title cannot be empty");
     }
 
-    notes[noteIndex] = {
-        ...notes[noteIndex],
+    if (noteData.content !== undefined && !noteData.content.trim()) {
+        throw new Error("Content cannot be empty");
+    }
+
+    const cleanedData: UpdateNoteInput = {
         ...noteData,
+        ...(noteData.title !== undefined ? { title: noteData.title.trim() } : {}),
+        ...(noteData.content !== undefined ? { content: noteData.content.trim() } : {}),
     };
 
-    return structuredClone(notes[noteIndex]);
+    return await noteRepository.updateNote(id, userId, cleanedData);
 };
 
-export const deleteNote = (id: string): boolean => {
-    const noteIndex: number = notes.findIndex((note: Note) => note.id === id);
-
-    if (noteIndex === -1) {
-        return false;
-    }
-
-    notes.splice(noteIndex, 1);
-    return true;
+export const deleteNote = async (
+    id: string,
+    userId: string
+): Promise<boolean> => {
+    return await noteRepository.deleteNote(id, userId);
 };

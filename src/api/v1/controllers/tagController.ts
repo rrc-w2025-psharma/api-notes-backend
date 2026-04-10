@@ -3,9 +3,18 @@ import { HTTP_STATUS } from "../../../constants/httpConstants";
 import * as tagService from "../services/tagService";
 import { CreateTagInput, UpdateTagInput } from "../models/tagModel";
 
-export const getAllTags = (req: Request, res: Response): void => {
+export const getAllTags = async (req: Request, res: Response): Promise<void> => {
     try {
-        const tags = tagService.getAllTags();
+        const userId = res.locals.uid;
+
+        if (!userId) {
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                message: "Unauthorized",
+            });
+            return;
+        }
+
+        const tags = await tagService.getAllTags(userId);
 
         res.status(HTTP_STATUS.OK).json({
             message: "Tags retrieved successfully",
@@ -18,10 +27,19 @@ export const getAllTags = (req: Request, res: Response): void => {
     }
 };
 
-export const getTagById = (req: Request, res: Response): void => {
+export const getTagById = async (req: Request, res: Response): Promise<void> => {
     try {
+        const userId = res.locals.uid;
+
+        if (!userId) {
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                message: "Unauthorized",
+            });
+            return;
+        }
+
         const { id } = req.params;
-        const tag = tagService.getTagById(id);
+        const tag = await tagService.getTagById(id, userId);
 
         if (!tag) {
             res.status(HTTP_STATUS.NOT_FOUND).json({
@@ -41,18 +59,20 @@ export const getTagById = (req: Request, res: Response): void => {
     }
 };
 
-export const createTag = (req: Request, res: Response): void => {
+export const createTag = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { name }: CreateTagInput = req.body;
+        const userId = res.locals.uid;
 
-        if (!name) {
-            res.status(HTTP_STATUS.BAD_REQUEST).json({
-                message: "Tag name is required",
+        if (!userId) {
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                message: "Unauthorized",
             });
             return;
         }
 
-        const newTag = tagService.createTag({ name });
+        const { name }: CreateTagInput = req.body;
+
+        const newTag = await tagService.createTag(userId, { name });
 
         res.status(HTTP_STATUS.CREATED).json({
             message: "Tag created successfully",
@@ -65,19 +85,21 @@ export const createTag = (req: Request, res: Response): void => {
     }
 };
 
-export const updateTag = (req: Request, res: Response): void => {
+export const updateTag = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { id } = req.params;
-        const { name }: UpdateTagInput = req.body;
+        const userId = res.locals.uid;
 
-        if (!name) {
-            res.status(HTTP_STATUS.BAD_REQUEST).json({
-                message: "Tag name is required",
+        if (!userId) {
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                message: "Unauthorized",
             });
             return;
         }
 
-        const updatedTag = tagService.updateTag(id, { name });
+        const { id } = req.params;
+        const { name }: UpdateTagInput = req.body;
+
+        const updatedTag = await tagService.updateTag(id, userId, { name });
 
         if (!updatedTag) {
             res.status(HTTP_STATUS.NOT_FOUND).json({
@@ -97,10 +119,19 @@ export const updateTag = (req: Request, res: Response): void => {
     }
 };
 
-export const deleteTag = (req: Request, res: Response): void => {
+export const deleteTag = async (req: Request, res: Response): Promise<void> => {
     try {
+        const userId = res.locals.uid;
+
+        if (!userId) {
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                message: "Unauthorized",
+            });
+            return;
+        }
+
         const { id } = req.params;
-        const deleted = tagService.deleteTag(id);
+        const deleted = await tagService.deleteTag(id, userId);
 
         if (!deleted) {
             res.status(HTTP_STATUS.NOT_FOUND).json({

@@ -6,9 +6,21 @@ import {
     UpdateCategoryInput,
 } from "../models/categoryModel";
 
-export const getAllCategories = (req: Request, res: Response): void => {
+export const getAllCategories = async (
+    req: Request,
+    res: Response
+): Promise<void> => {
     try {
-        const categories = categoryService.getAllCategories();
+        const userId = res.locals.uid;
+
+        if (!userId) {
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                message: "Unauthorized",
+            });
+            return;
+        }
+
+        const categories = await categoryService.getAllCategories(userId);
 
         res.status(HTTP_STATUS.OK).json({
             message: "Categories retrieved successfully",
@@ -21,10 +33,22 @@ export const getAllCategories = (req: Request, res: Response): void => {
     }
 };
 
-export const getCategoryById = (req: Request, res: Response): void => {
+export const getCategoryById = async (
+    req: Request,
+    res: Response
+): Promise<void> => {
     try {
+        const userId = res.locals.uid;
+
+        if (!userId) {
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                message: "Unauthorized",
+            });
+            return;
+        }
+
         const { id } = req.params;
-        const category = categoryService.getCategoryById(id);
+        const category = await categoryService.getCategoryById(id, userId);
 
         if (!category) {
             res.status(HTTP_STATUS.NOT_FOUND).json({
@@ -44,18 +68,23 @@ export const getCategoryById = (req: Request, res: Response): void => {
     }
 };
 
-export const createCategory = (req: Request, res: Response): void => {
+export const createCategory = async (
+    req: Request,
+    res: Response
+): Promise<void> => {
     try {
-        const { name }: CreateCategoryInput = req.body;
+        const userId = res.locals.uid;
 
-        if (!name) {
-            res.status(HTTP_STATUS.BAD_REQUEST).json({
-                message: "Category name is required",
+        if (!userId) {
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                message: "Unauthorized",
             });
             return;
         }
 
-        const newCategory = categoryService.createCategory({ name });
+        const { name }: CreateCategoryInput = req.body;
+
+        const newCategory = await categoryService.createCategory(userId, { name });
 
         res.status(HTTP_STATUS.CREATED).json({
             message: "Category created successfully",
@@ -68,19 +97,26 @@ export const createCategory = (req: Request, res: Response): void => {
     }
 };
 
-export const updateCategory = (req: Request, res: Response): void => {
+export const updateCategory = async (
+    req: Request,
+    res: Response
+): Promise<void> => {
     try {
-        const { id } = req.params;
-        const { name }: UpdateCategoryInput = req.body;
+        const userId = res.locals.uid;
 
-        if (!name) {
-            res.status(HTTP_STATUS.BAD_REQUEST).json({
-                message: "Category name is required",
+        if (!userId) {
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                message: "Unauthorized",
             });
             return;
         }
 
-        const updatedCategory = categoryService.updateCategory(id, { name });
+        const { id } = req.params;
+        const { name }: UpdateCategoryInput = req.body;
+
+        const updatedCategory = await categoryService.updateCategory(id, userId, {
+            name,
+        });
 
         if (!updatedCategory) {
             res.status(HTTP_STATUS.NOT_FOUND).json({
@@ -100,10 +136,22 @@ export const updateCategory = (req: Request, res: Response): void => {
     }
 };
 
-export const deleteCategory = (req: Request, res: Response): void => {
+export const deleteCategory = async (
+    req: Request,
+    res: Response
+): Promise<void> => {
     try {
+        const userId = res.locals.uid;
+
+        if (!userId) {
+            res.status(HTTP_STATUS.UNAUTHORIZED).json({
+                message: "Unauthorized",
+            });
+            return;
+        }
+
         const { id } = req.params;
-        const deleted = categoryService.deleteCategory(id);
+        const deleted = await categoryService.deleteCategory(id, userId);
 
         if (!deleted) {
             res.status(HTTP_STATUS.NOT_FOUND).json({
