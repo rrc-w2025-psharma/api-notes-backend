@@ -1,4 +1,5 @@
 import express, { Express } from "express";
+import setupSwagger from "../config/swagger";
 import { healthCheckRoute } from "./api/v1/routes/healthRoute";
 import noteRoutes from "./api/v1/routes/noteRoutes";
 import categoryRoutes from "./api/v1/routes/categoryRoutes";
@@ -7,6 +8,9 @@ import userRoutes from "./api/v1/routes/userRoutes";
 import adminRoutes from "./api/v1/routes/adminRoutes";
 
 const app: Express = express();
+
+// Setup Swagger
+setupSwagger(app);
 
 // Middleware
 app.use(express.json());
