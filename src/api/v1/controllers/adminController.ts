@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { auth } from "../../../../config/firebaseConfig";
+import { getFirebaseAuth } from "../../../../config/firebaseConfig";
 import { successResponse } from "../models/responseModel";
 import { HTTP_STATUS } from "../../../constants/httpConstants";
 
@@ -31,12 +31,13 @@ export const setUserRole = async (
     }
 
     try {
+        const auth = getFirebaseAuth();
         await auth.setCustomUserClaims(uid, { role });
 
         res.status(HTTP_STATUS.OK).json(
             successResponse(
                 { uid, role },
-                `Role set for user: ${uid}. User must obtain a new token for changes to take effect.`
+                "User role updated successfully"
             )
         );
     } catch (error) {

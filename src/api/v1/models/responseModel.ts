@@ -24,7 +24,10 @@ export const successResponse = <T>(
  * @returns {object} A formatted error response object.
  */
 export const errorResponse = (message: string, code: string) => ({
+    status: "error",
     success: false,
+    message,
+    code,
     error: {
         message,
         code,

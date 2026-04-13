@@ -1,4 +1,4 @@
-import express, { Router } from "express";
+import express = require("express");
 import {
     getAllTags,
     getTagById,
@@ -11,7 +11,7 @@ import authenticate from "../middleware/authenticate";
 import validate from "../middleware/validate";
 import { createTagSchema, updateTagSchema } from "../validation/tagValidation";
 
-const router: Router = express.Router();
+const router = express.Router();
 
 /**
  * @openapi

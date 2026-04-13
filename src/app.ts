@@ -1,9 +1,11 @@
-import express, { Express } from "express";
+import express = require("express");
+import { Express } from "express";
 import setupSwagger from "../config/swagger";
 import helmet from "helmet";
-import cors from "cors";
-import morgan from "morgan";
+import cors = require("cors");
+import morgan = require("morgan");
 import rateLimiter from "./api/v1/middleware/rateLimiter";
+import errorHandler from "./api/v1/middleware/errorHandler";
 import { healthCheckRoute } from "./api/v1/routes/healthRoute";
 import noteRoutes from "./api/v1/routes/noteRoutes";
 import categoryRoutes from "./api/v1/routes/categoryRoutes";
@@ -34,5 +36,7 @@ app.use("/api/v1/categories", categoryRoutes);
 app.use("/api/v1/tags", tagRoutes);
 app.use("/api/v1", userRoutes);
 app.use("/api/v1", adminRoutes);
+
+app.use(errorHandler);
 
 export default app;

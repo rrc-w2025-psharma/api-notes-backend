@@ -31,10 +31,7 @@ const isAuthorized = (opts: AuthorizationOptions): MiddlewareFunction => {
 
             // If no role exists on the user, throw Forbidden response
             if (!role) {
-                throw new AuthorizationError(
-                    "Forbidden: No role found",
-                    "ROLE_NOT_FOUND"
-                );
+                throw new AuthorizationError("Forbidden", "ROLE_NOT_FOUND");
             }
 
             // Check if the user's role matches one of the allowed roles
@@ -43,10 +40,7 @@ const isAuthorized = (opts: AuthorizationOptions): MiddlewareFunction => {
             }
 
             // If the role is not authorized, throw Forbidden response
-            throw new AuthorizationError(
-                "Forbidden: Insufficient role",
-                "INSUFFICIENT_ROLE"
-            );
+            throw new AuthorizationError("Forbidden", "INSUFFICIENT_ROLE");
         } catch (error) {
             // Pass errors to the centralized error handler
             next(error);

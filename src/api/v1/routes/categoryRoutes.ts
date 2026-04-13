@@ -1,4 +1,4 @@
-import express, { Router } from "express";
+import express = require("express");
 import {
     getAllCategories,
     getCategoryById,
@@ -13,7 +13,7 @@ import {
     updateCategorySchema,
 } from ".././validation/categoryValidation";
 
-const router: Router = express.Router();
+const router: express.Router = express.Router();
 
 /**
  * @openapi

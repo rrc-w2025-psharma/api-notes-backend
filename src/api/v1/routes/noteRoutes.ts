@@ -1,4 +1,4 @@
-import express, { Router } from "express";
+import express = require("express");
 import {
     getAllNotes,
     getNoteById,
@@ -13,7 +13,7 @@ import {
     updateNoteSchema,
 } from "../validation/noteValidation";
 
-const router: Router = express.Router();
+const router: express.Router = express.Router();
 
 /**
  * @openapi

@@ -1,4 +1,5 @@
 import { getDb } from "../../../../config/firebaseConfig";
+import { Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { Tag } from "../models/tagModel";
 
 const db = getDb();
@@ -15,7 +16,7 @@ export const getAllTags = async (userId: string): Promise<Tag[]> => {
         .where("userId", "==", userId)
         .get();
 
-    return snapshot.docs.map((doc) => doc.data() as Tag);
+    return snapshot.docs.map((doc: QueryDocumentSnapshot) => doc.data() as Tag);
 };
 
 export const getTagById = async (

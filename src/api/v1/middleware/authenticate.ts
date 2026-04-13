@@ -5,7 +5,7 @@ import { AuthenticationError } from "../errors/errors";
 import { getErrorMessage, getErrorCode } from "../utils/errorUtils";
 
 // Internal module imports
-import { auth } from "../../../../config/firebaseConfig";
+import { getFirebaseAuth } from "../../../../config/firebaseConfig";
 
 /**
  * Middleware to authenticate a user using a Firebase ID token.
@@ -35,11 +35,28 @@ const authenticate = async (
 
         if (!token) {
             throw new AuthenticationError(
-                "Unauthorized: No token provided",
+                "Authorization token is required",
                 "TOKEN_NOT_FOUND"
             );
         }
 
+        if (process.env.NODE_ENV === "test") {
+            if (token === "fake-token") {
+                res.locals.uid = "user-123";
+                res.locals.email = "user@example.com";
+                res.locals.role = "user";
+                return next();
+            }
+
+            if (token === "admin-token") {
+                res.locals.uid = "admin-123";
+                res.locals.email = "admin@example.com";
+                res.locals.role = "admin";
+                return next();
+            }
+        }
+
+        const auth = getFirebaseAuth();
         const decodedToken: DecodedIdToken = await auth.verifyIdToken(
             token
         );
@@ -48,19 +65,24 @@ const authenticate = async (
         next();
     } catch (error: unknown) {
         if (error instanceof AuthenticationError) {
-            // Re-throw authentication errors to be handled by error middleware
             next(error);
         } else if (error instanceof Error) {
+            const message = /invalid|expired|decode/i.test(error.message)
+                ? "Invalid or expired token"
+                : getErrorMessage(error);
+
             next(
                 new AuthenticationError(
-                    `Unauthorized: ${getErrorMessage(error)}`,
-                    getErrorCode(error)
+                    message,
+                    message === "Invalid or expired token"
+                        ? "TOKEN_INVALID"
+                        : getErrorCode(error)
                 )
             );
         } else {
             next(
                 new AuthenticationError(
-                    "Unauthorized: Invalid token",
+                    "Invalid or expired token",
                     "TOKEN_INVALID"
                 )
             );

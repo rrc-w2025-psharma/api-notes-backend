@@ -1,4 +1,4 @@
-import Joi from "joi";
+import Joi = require("joi");
 
 export const createNoteSchema = Joi.object({
     title: Joi.string().trim().min(3).max(100).required(),

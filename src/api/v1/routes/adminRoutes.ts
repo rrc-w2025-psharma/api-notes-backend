@@ -1,9 +1,9 @@
-import express, { Router } from "express";
+import express = require("express");
 import { setUserRole } from "../controllers/adminController";
 import authenticate from "../middleware/authenticate";
 import authorize from "../middleware/authorize";
 
-const router: Router = express.Router();
+const router = express.Router();
 
 /**
  * @openapi

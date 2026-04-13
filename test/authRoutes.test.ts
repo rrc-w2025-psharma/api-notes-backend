@@ -1,22 +1,19 @@
 import request from "supertest";
 import app from "../src/app";
-import admin from "firebase-admin";
 
-jest.mock("firebase-admin", () => ({
-    auth: jest.fn(),
+const mockVerifyIdToken = jest.fn();
+const mockSetCustomUserClaims = jest.fn();
+
+jest.mock("firebase-admin/auth", () => ({
+    getAuth: jest.fn(() => ({
+        verifyIdToken: mockVerifyIdToken,
+        setCustomUserClaims: mockSetCustomUserClaims,
+    })),
 }));
 
 describe("Authentication and Authorization Routes", () => {
-    const mockVerifyIdToken = jest.fn();
-    const mockSetCustomUserClaims = jest.fn();
-
     beforeEach(() => {
         jest.clearAllMocks();
-
-        (admin.auth as jest.Mock).mockReturnValue({
-            verifyIdToken: mockVerifyIdToken,
-            setCustomUserClaims: mockSetCustomUserClaims,
-        });
     });
 
     it("should return 401 when no token is provided for profile route", async () => {

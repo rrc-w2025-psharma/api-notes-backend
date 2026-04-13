@@ -75,11 +75,29 @@ const initializeFirebaseAdmin = (): App => {
     return initializeApp(getFirebaseConfig());
 };
 
-// Initialize the Firebase Admin app
-const app: App = initializeFirebaseAdmin();
+let app: App | null = null;
+let db: Firestore | null = null;
+let auth: Auth | null = null;
 
-const db: Firestore = getFirestore(app);
+const getFirebaseApp = (): App => {
+    if (!app) {
+        app = initializeFirebaseAdmin();
+    }
+    return app;
+};
 
-const auth: Auth = getAuth(app);
+const getDb = (): Firestore => {
+    if (!db) {
+        db = getFirestore(getFirebaseApp());
+    }
+    return db;
+};
 
-export { db as getDb, auth as getFirebaseAuth };
+const getFirebaseAuth = (): Auth => {
+    if (!auth) {
+        auth = getAuth(getFirebaseApp());
+    }
+    return auth;
+};
+
+export { getDb, getFirebaseAuth };

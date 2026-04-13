@@ -92,9 +92,9 @@ describe("Category API Endpoints", () => {
     });
 
     it("should return 404 when getting a category that does not exist", async () => {
-        const response = await request(app).get(
-            "/api/v1/categories/category-does-not-exist"
-        );
+        const response = await request(app)
+            .get("/api/v1/categories/category-does-not-exist")
+            .set('Authorization', 'Bearer fake-token');
 
         expect(response.status).toBe(404);
         expect(response.body.message).toBe("Category not found");

@@ -1,4 +1,5 @@
 import { getDb } from "../../../../config/firebaseConfig";
+import { Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { Category } from "../models/categoryModel";
 
 const db = getDb();
@@ -17,7 +18,7 @@ export const getAllCategories = async (userId: string): Promise<Category[]> => {
         .where("userId", "==", userId)
         .get();
 
-    return snapshot.docs.map((doc) => doc.data() as Category);
+    return snapshot.docs.map((doc: QueryDocumentSnapshot) => doc.data() as Category);
 };
 
 export const getCategoryById = async (

@@ -1,4 +1,4 @@
-import Joi from "joi";
+import Joi = require("joi");
 
 export const createCategorySchema = Joi.object({
     name: Joi.string().trim().min(2).max(50).required(),

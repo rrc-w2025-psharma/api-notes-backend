@@ -1,4 +1,5 @@
 import { getDb } from "../../../../config/firebaseConfig";
+import { Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { Note } from "../models/noteModel";
 
 const db = getDb();
@@ -15,7 +16,7 @@ export const getAllNotes = async (userId: string): Promise<Note[]> => {
         .where("userId", "==", userId)
         .get();
 
-    return snapshot.docs.map((doc) => doc.data() as Note);
+    return snapshot.docs.map((doc: QueryDocumentSnapshot) => doc.data() as Note);
 };
 
 export const getNoteById = async (
