@@ -1,5 +1,9 @@
 import express, { Express } from "express";
 import setupSwagger from "../config/swagger";
+import helmet from "helmet";
+import cors from "cors";
+import morgan from "morgan";
+import rateLimiter from "./api/v1/middleware/rateLimiter";
 import { healthCheckRoute } from "./api/v1/routes/healthRoute";
 import noteRoutes from "./api/v1/routes/noteRoutes";
 import categoryRoutes from "./api/v1/routes/categoryRoutes";
@@ -8,6 +12,14 @@ import userRoutes from "./api/v1/routes/userRoutes";
 import adminRoutes from "./api/v1/routes/adminRoutes";
 
 const app: Express = express();
+
+app.use(helmet());
+
+app.use(cors());
+
+app.use(morgan("dev"));
+
+app.use(rateLimiter);
 
 // Setup Swagger
 setupSwagger(app);
