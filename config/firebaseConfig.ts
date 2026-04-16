@@ -22,7 +22,7 @@ import { getAuth, Auth } from "firebase-admin/auth";
  * @returns {AppOptions} Firebase application configuration object
  * @throws {Error} If any required environment variables are missing
  */
-const getFirebaseConfig = (): AppOptions => {
+const getFirebaseConfig = (): AppOptions | null => {
     // Extract Firebase credentials from environment variables
     const {
         FIREBASE_PROJECT_ID,
@@ -36,10 +36,7 @@ const getFirebaseConfig = (): AppOptions => {
         !FIREBASE_CLIENT_EMAIL ||
         !FIREBASE_PRIVATE_KEY
     ) {
-        // You could definitely create a custom error to use here
-        throw new Error(
-            "Missing Firebase configuration. Please check your environment variables."
-        );
+        return null;
     }
 
     // Create a service account object with the provided credentials
@@ -64,7 +61,11 @@ const getFirebaseConfig = (): AppOptions => {
  *
  * @returns {App} Firebase Admin app instance
  */
-const initializeFirebaseAdmin = (): App => {
+const initializeFirebaseAdmin = (): App | null => {
+    const config = getFirebaseConfig();
+    if (!config) {
+        return null;
+    }
     // Check if an app is already initialized
     const existingApp: App = getApps()[0];
     if (existingApp) {
@@ -72,14 +73,18 @@ const initializeFirebaseAdmin = (): App => {
         return existingApp;
     }
     // Otherwise create and return a new app
-    return initializeApp(getFirebaseConfig());
+    return initializeApp(config);
 };
 
 // Initialize the Firebase Admin app
-const app: App = initializeFirebaseAdmin();
+const app: App | null = initializeFirebaseAdmin();
 
-const db: Firestore = getFirestore(app);
+const db: Firestore | null = app ? getFirestore(app) : null;
 
-const auth: Auth = getAuth(app);
+const auth: Auth | null = app ? getAuth(app) : null;
 
-export { db, auth };
+const getDb = (): Firestore | null => db;
+
+const getFirebaseAuth = (): Auth | null => auth;
+
+export { getDb, getFirebaseAuth };

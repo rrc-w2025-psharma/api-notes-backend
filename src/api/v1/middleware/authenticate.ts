@@ -5,7 +5,7 @@ import { AuthenticationError } from "../errors/errors";
 import { getErrorMessage, getErrorCode } from "../utils/errorUtils";
 
 // Internal module imports
-import { auth } from "../../../../config/firebaseConfig";
+import { getFirebaseAuth } from "../../../../config/firebaseConfig";
 
 /**
  * Middleware to authenticate a user using a Firebase ID token.
@@ -40,7 +40,15 @@ const authenticate = async (
             );
         }
 
-        const decodedToken: DecodedIdToken = await auth.verifyIdToken(
+        const firebaseAuth = getFirebaseAuth();
+        if (!firebaseAuth) {
+            throw new AuthenticationError(
+                "Firebase authentication is not configured",
+                "AUTH_CONFIG_ERROR"
+            );
+        }
+
+        const decodedToken: DecodedIdToken = await firebaseAuth.verifyIdToken(
             token
         );
         res.locals.uid = decodedToken.uid;

@@ -1,27 +1,31 @@
 import { getDb } from "../../../../config/firebaseConfig";
+import { Firestore, QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { Note } from "../models/noteModel";
 
 const db = getDb();
 const COLLECTION_NAME = "notes";
 
 export const createNote = async (note: Note): Promise<Note> => {
+    if (!db) throw new Error("Firebase not configured");
     await db.collection(COLLECTION_NAME).doc(note.id).set(note);
     return note;
 };
 
 export const getAllNotes = async (userId: string): Promise<Note[]> => {
+    if (!db) throw new Error("Firebase not configured");
     const snapshot = await db
         .collection(COLLECTION_NAME)
         .where("userId", "==", userId)
         .get();
 
-    return snapshot.docs.map((doc) => doc.data() as Note);
+    return snapshot.docs.map((doc: QueryDocumentSnapshot) => doc.data() as Note);
 };
 
 export const getNoteById = async (
     id: string,
     userId: string
 ): Promise<Note | null> => {
+    if (!db) throw new Error("Firebase not configured");
     const doc = await db.collection(COLLECTION_NAME).doc(id).get();
 
     if (!doc.exists) {
@@ -42,6 +46,7 @@ export const updateNote = async (
     userId: string,
     noteData: Partial<Note>
 ): Promise<Note | null> => {
+    if (!db) throw new Error("Firebase not configured");
     const noteRef = db.collection(COLLECTION_NAME).doc(id);
     const existingDoc = await noteRef.get();
 
@@ -65,6 +70,7 @@ export const deleteNote = async (
     id: string,
     userId: string
 ): Promise<boolean> => {
+    if (!db) throw new Error("Firebase not configured");
     const noteRef = db.collection(COLLECTION_NAME).doc(id);
     const existingDoc = await noteRef.get();
 

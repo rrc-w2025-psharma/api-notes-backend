@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { auth } from "../../../../config/firebaseConfig";
+import { getFirebaseAuth } from "../../../../config/firebaseConfig";
 import { successResponse } from "../models/responseModel";
 import { HTTP_STATUS } from "../../../constants/httpConstants";
 
@@ -31,7 +31,12 @@ export const setUserRole = async (
     }
 
     try {
-        await auth.setCustomUserClaims(uid, { role });
+        const firebaseAuth = getFirebaseAuth();
+        if (!firebaseAuth) {
+            throw new Error("Firebase authentication is not configured");
+        }
+
+        await firebaseAuth.setCustomUserClaims(uid, { role });
 
         res.status(HTTP_STATUS.OK).json(
             successResponse(
